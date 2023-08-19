@@ -1,48 +1,68 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Zoom, Fab } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import Fab from "@mui/material/Fab";
-import Zoom from "@mui/material/Zoom";
+import axios from "axios";
+axios.defaults.withCredentials = true;
 
 function CreateArea(props) {
+  const navigate = useNavigate();
+  const [isExpanded, setIsExpanded] = useState(false);
   const [inputNote, setInputNote] = useState({
     title: "",
     content: "",
   });
 
-  const [isExpanded, setExpanded] = useState(false);
+  const handleAdd = async (event) => {
+    event.preventDefault();
 
-  function submitNote(event) {
-    props.onAdd(inputNote);
+    try {
+      const res = await axios.post("http://localhost:8080/notes", inputNote);
+      if (res.status === 201) {
+        props.onAdd(inputNote);
+        navigate("/home");
+      }
+    } catch (err) {
+      console.error("Error adding the note: ", err);
+    }
+
     setInputNote({
       title: "",
       content: "",
     });
-    event.preventDefault();
-  }
+    setIsExpanded(false);
+  };
 
   return (
     <div>
-      <form onClick={() => setExpanded(true)} className="create-note">
+      <form
+        className="create-note"
+        onClick={() => setIsExpanded(true)}
+        onSubmit={handleAdd}
+      >
         <input
           name="title"
+          value={inputNote.title}
+          type={!isExpanded ? "hidden" : "text"}
+          placeholder="Title"
+          required
           onChange={(event) =>
             setInputNote({ ...inputNote, title: event.target.value })
           }
-          value={inputNote.title}
-          type={!isExpanded && "hidden"}
-          placeholder="Title"
         />
         <textarea
           name="content"
+          value={inputNote.content}
+          type="text"
+          placeholder="Take a note..."
+          rows={isExpanded ? 3 : 1}
+          required
           onChange={(event) =>
             setInputNote({ ...inputNote, content: event.target.value })
           }
-          value={inputNote.content}
-          placeholder="Take a note..."
-          rows={isExpanded ? 3 : 1}
         />
-        <Zoom in={isExpanded} appear={true}>
-          <Fab onClick={submitNote}>
+        <Zoom in={isExpanded}>
+          <Fab aria-label="add" role="button" type="submit">
             <AddIcon />
           </Fab>
         </Zoom>

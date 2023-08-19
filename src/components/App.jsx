@@ -1,46 +1,32 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Header from "./Header";
+import Login from "./Login";
+import Register from "./Register";
+import Home from "./Home";
 import Footer from "./Footer";
-import Note from "./Note";
-import CreateArea from "./CreateArea";
 
 function App() {
-  const [notes, setNotes] = useState([]);
+  useEffect(() => {
+    if (window.location.pathname === "/") {
+      window.location.href = "/login";
+    }
 
-  function addNote(note) {
-    setNotes((prevNotes) => [...prevNotes, note]);
-  }
-
-  function editNote(id, editedNote) {
-    setNotes((prevNotes) =>
-      prevNotes.map((note, index) => (index === id ? editedNote : note))
-    );
-  }
-
-  function deleteNote(id) {
-    setNotes((prevNotes) => prevNotes.filter((note, index) => index !== id));
-  }
+    window.addEventListener("beforeunload", () => {
+      localStorage.clear();
+    });
+  }, []);
 
   return (
-    <div>
+    <BrowserRouter>
       <Header />
-      <CreateArea onAdd={addNote} />
-      {notes.length !== 0 ? (
-        notes.map((note, index) => (
-          <Note
-            key={index}
-            id={index}
-            title={note.title}
-            content={note.content}
-            onEdit={editNote}
-            onDelete={deleteNote}
-          />
-        ))
-      ) : (
-        <h1 className="center-text">Your notes will appear here</h1>
-      )}
+      <Routes>
+        <Route path="/login" element={<Login />}></Route>
+        <Route path="/register" element={<Register />}></Route>
+        <Route path="/home" element={<Home />}></Route>
+      </Routes>
       <Footer />
-    </div>
+    </BrowserRouter>
   );
 }
 
